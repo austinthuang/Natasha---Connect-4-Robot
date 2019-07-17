@@ -1,8 +1,5 @@
 const float HOR_MID_DIST = 3.5;
 const float CALIBRATE_BOARD = 9.0;
-const float COL_1 = 11.58;
-const float COL_5 = 25.42;
-const float COL_7 = 35.2;
 const int BOARD_ROWS = 6;
 const int BOARD_COLS = 7;
 const int SLOT_E = 0;
