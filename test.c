@@ -9,6 +9,13 @@ const int SLOT_E = 0;
 const int SLOT_R = 5;
 const int SLOT_Y = 4;
 const int BLUE = 2;
+const float COL_1 = 11.58;
+const float COL_2 = 15.38;
+const float COL_3 = 19.08;
+const float COL_4 = 22.85;
+const float COL_5 = 26.82;
+const float COL_6 = 30.22;
+const float COL_7 = 33.9;
 
 void Dispense() //Dispenses a chip
 {
@@ -61,6 +68,7 @@ task main()
 	wait1Msec(50);
 	SensorMode[S3] = modeEV3Color_Color;
 	wait1Msec(50);
+	float columns[7] = {COL_1, COL_2, COL_3, COL_4, COL_5, COL_6, COL_7};
 
 	//creates virtual gameboard and fills it with all empty values
 	int gameBoard[BOARD_ROWS * BOARD_COLS];
@@ -68,8 +76,15 @@ task main()
 	{
 		gameBoard[i] = 0;
 	}
-
-
+	for(int i = 0; i < 7; i++)
+	{
+		recallHorSensors();
+		wait1Msec(500);
+		motor[motorA]= 25;
+		while (nMotorEncoder[motorA] < ((180/(PI*2.1575))*(columns[i]))){}
+		motor[motorA] = 0;
+		Dispense();
+	}
 
 	while(!getButtonPress(buttonAny)){}
 	test();
