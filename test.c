@@ -2,9 +2,9 @@ const float HOR_MID_DIST = 3.5;
 const float CALIBRATE_BOARD = 9.0;
 const float COL_1 = 11.58;
 const float COL_5 = 25.42;
-const float COL_7 = 32.64;
+const float COL_7 = 32.7;
 
-void Dispense()
+void Dispense() //Dispenses a chip
 {
 	motor[motorC] = 5;
 	wait1Msec(1000);
@@ -32,12 +32,12 @@ void recallHorSensors() //resets the motor encoder for the motor running in the 
 
 task main()
 {
-	//while(!getButtonPress(buttonBack)){
-	//Dispense();
-	//Controlled();
-	//simultaneous();
-
+	SensorType[S1] = sensorEV3_Touch;
 	SensorType[S2] = sensorEV3_Touch;
+	SensorType[S3] = sensorEV3_Color;
+	wait1Msec(50);
+	SensorMode[S3] = modeEV3Color_Color;
+	wait1Msec(50);
 
 	while(!getButtonPress(buttonAny)){}
 
@@ -47,6 +47,4 @@ task main()
 		while (nMotorEncoder[motorA] < ((180/(PI*2.1575))*(COL_7))){}
 		motor[motorA] = 0;
 		Dispense();
-
-
 }
