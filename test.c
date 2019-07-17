@@ -68,8 +68,8 @@ void recallHorSensors() //resets the motor encoder for the motor running in the 
 task main()
 {
 	//while(!getButtonPress(buttonBack)){
-	Dispense();
-	Controlled();
+	//Dispense();
+	//Controlled();
 	//simultaneous();
 
 	SensorType[S2] = sensorEV3_Touch;
@@ -81,6 +81,7 @@ task main()
 		motor[motorB]= 25;
 		while (nMotorEncoder[motorB] < ((180/(PI*2.1575))*11.08)){}
 		motor[motorB] = 0;
+		Dispense();
 
 
 }
