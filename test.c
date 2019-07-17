@@ -6,9 +6,9 @@ const float COL_7 = 32.7;
 
 void Dispense() //Dispenses a chip
 {
-	motor[motorC] = 5;
-	wait1Msec(1000);
-	motor[motorC] = -5;
+	motor[motorC] = 20;
+	wait1Msec(350);
+	motor[motorC] = -20;
 	wait1Msec(1000);
 	motor[motorC] = 0;
 	//while(getButtonPress(buttonAny)){}
