@@ -16,18 +16,18 @@ void Dispense()
 
 void recallVerSensors() //resets the motor encoder for the motor running in the vertical xis
 {
-	motor[motorA]= -100;
+	motor[motorB]= -100;
 	while(SensorValue[S1] == 0){}
-	motor[motorA] = 0;
-	nMotorEncoder[motorA] = 0;
+	motor[motorB] = 0;
+	nMotorEncoder[motorB] = 0;
 }
 
 void recallHorSensors() //resets the motor encoder for the motor running in the horizontal axis
 {
-	motor[motorB]= -100;
+	motor[motorA]= -100;
 	while(SensorValue[S2] == 0){}
-	motor[motorB] = 0;
-	nMotorEncoder[motorB] = 0;
+	motor[motorA] = 0;
+	nMotorEncoder[motorA] = 0;
 }
 
 task main()
@@ -43,9 +43,9 @@ task main()
 
 		recallHorSensors();
 		wait1Msec(500);
-		motor[motorB]= 25;
-		while (nMotorEncoder[motorB] < ((180/(PI*2.1575))*(COL_7))){}
-		motor[motorB] = 0;
+		motor[motorA]= 25;
+		while (nMotorEncoder[motorA] < ((180/(PI*2.1575))*(COL_7))){}
+		motor[motorA] = 0;
 		Dispense();
 
 
