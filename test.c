@@ -1,43 +1,8 @@
-void simultaneous()
-{
-	while(!getButtonPress(buttonAny)){}
-	nMotorEncoder[motorA] = 0;
-	motor[motorA] = 75;
-	motor[motorB] = 50;
-	while(nMotorEncoder[motorA] < 20 * (180.0 / (PI * 2.1))) {}
-	motor[motorA] = 0;
-	motor[motorB] = 0;
-	wait1Msec(500);
-	nMotorEncoder[motorA] = 0;
-	motor[motorA] = -75;
-	motor[motorB] = -50;
-	while(nMotorEncoder[motorA] > -20 * (180.0 / (PI * 2.1))) {}
-	motor[motorA] = 0;
-	motor[motorB] = 0;
-}
-
-void Controlled()
-{
-	while(!getButtonPress(buttonBack))
-	{
-		while(getButtonPress(buttonUp)){
-			motor[motorA] = 50;}
-		while(getButtonPress(buttonDown)){
-			motor[motorA] = -50;}
-		while(getButtonPress(buttonLeft)){
-			motor[motorB] = 50;}
-		while(getButtonPress(buttonRight)){
-			motor[motorB] = -50;}
-		/*	if(getButtonPress(buttonEnter)){
-		time1[T1]=0;
-		motor[motorC] = 5;
-		while(time1[T1] < 1000 ) {}
-		time1[T1]=0;
-		motor[motorC] = -5;
-		while(time1[T1] < 1000) {} }*/
-		motor[motorA] = motor[motorB] = 0;
-	}
-}
+const float HOR_MID_DIST = 3.5;
+const float CALIBRATE_BOARD = 9.0;
+const float COL_1 = 11.58;
+const float COL_5 = 25.42;
+const float COL_7 = 32.64;
 
 void Dispense()
 {
@@ -79,7 +44,7 @@ task main()
 		recallHorSensors();
 		wait1Msec(500);
 		motor[motorB]= 25;
-		while (nMotorEncoder[motorB] < ((180/(PI*2.1575))*11.08)){}
+		while (nMotorEncoder[motorB] < ((180/(PI*2.1575))*(COL_7))){}
 		motor[motorB] = 0;
 		Dispense();
 
