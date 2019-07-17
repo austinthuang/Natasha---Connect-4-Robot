@@ -49,12 +49,38 @@ void Dispense()
 	//while(getButtonPress(buttonAny)){}
 }
 
+void recallVerSensors() //resets the motor encoder for the motor running in the vertical xis
+{
+	motor[motorA]= -100;
+	while(SensorValue[S1] == 0){}
+	motor[motorA] = 0;
+	nMotorEncoder[motorA] = 0;
+}
+
+void recallHorSensors() //resets the motor encoder for the motor running in the horizontal axis
+{
+	motor[motorB]= -100;
+	while(SensorValue[S2] == 0){}
+	motor[motorB] = 0;
+	nMotorEncoder[motorB] = 0;
+}
+
 task main()
 {
 	//while(!getButtonPress(buttonBack)){
 	Dispense();
 	Controlled();
 	//simultaneous();
+
+	SensorType[S2] = sensorEV3_Touch;
+
+	while(!getButtonPress(buttonAny)){}
+
+		recallHorSensors();
+		wait1Msec(500);
+		motor[motorB]= 25;
+		while (nMotorEncoder[motorB] < ((180/(PI*2.1575))*11.08)){}
+		motor[motorB] = 0;
 
 
 }
