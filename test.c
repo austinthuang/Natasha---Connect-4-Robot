@@ -40,7 +40,33 @@ void recallHorSensors() //resets the motor encoder for the motor running in the 
 	nMotorEncoder[motorA] = 0;
 }
 
+bool rowCheck(int *gameBoard, int slot, int token)
+{
+	if (slot != token)
+		return false;
 
+	int counter = 1;
+	bool cont = true;
+
+	//go right
+	for (int i = slot + 1; i < 21 && cont == true; i++)
+	{
+		if (gameBoard[i] == token)
+			counter++;
+		else
+			cont = false;
+	}
+	cont = true;
+	//go left
+	for (int i = slot - 1; i > 13 && cont == true; i++)
+	{
+		if (gameBoard[i] == token)
+			counter++;
+		else
+			cont = false;
+	}
+	return counter > 3;
+}
 
 void test()
 {
