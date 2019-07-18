@@ -68,17 +68,16 @@ bool rowCheck(int *gameBoard, int slot, int token)
 	return counter > 3;
 }
 
-void test()
+void test(float *columns )
 {
-	for (int i = 0; i < 3; i++)
+	for(int i = 0; i < 7; i++)
 	{
 		recallHorSensors();
 		wait1Msec(500);
-		motor[motorA]= 35;
-		while (nMotorEncoder[motorA] < ((180/(PI*2.1575))*(COL_7))){}
+		motor[motorA]= 25;
+		while (nMotorEncoder[motorA] < ((180/(PI*2.1575))*(columns[i]))){}
 		motor[motorA] = 0;
 		Dispense();
-		recallHorSensors();
 	}
 }
 
@@ -99,17 +98,8 @@ task main()
 	{
 		gameBoard[i] = 0;
 	}
-	for(int i = 0; i < 7; i++)
-	{
-		recallHorSensors();
-		wait1Msec(500);
-		motor[motorA]= 25;
-		while (nMotorEncoder[motorA] < ((180/(PI*2.1575))*(columns[i]))){}
-		motor[motorA] = 0;
-		Dispense();
-	}
 
 	while(!getButtonPress(buttonAny)){}
-	test();
+	test(columns);
 
 }
