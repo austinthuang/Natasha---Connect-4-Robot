@@ -11,8 +11,8 @@ const float COL_2 = 15.38;
 const float COL_3 = 19.08;
 const float COL_4 = 22.85;
 const float COL_5 = 26.82;
-const float COL_6 = 30.22;
-const float COL_7 = 33.92;
+const float COL_6 = 30.5;
+const float COL_7 = 34.5;
 
 int gameBoard[BOARD_ROWS][BOARD_COLS];
 
