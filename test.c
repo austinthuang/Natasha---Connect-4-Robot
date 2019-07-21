@@ -6,8 +6,8 @@ const float COL_2 = 15.38;
 const float COL_3 = 19.08;
 const float COL_4 = 22.85;
 const float COL_5 = 26.82;
-const float COL_6 = 30.5;
-const float COL_7 = 34.5;
+const float COL_6 = 30.7;
+const float COL_7 = 34.9;
 const float CENT_CENT = 3.42;
 
 int gameBoard[BOARD_ROWS][BOARD_COLS];
@@ -24,7 +24,7 @@ void dispense() //Dispenses a chip
 
 void recallVerSensors() //resets the motor encoder for the motor running in the vertical xis
 {
-	motor[motorB]= -50;
+	motor[motorB]= -40;
 	while(SensorValue[S1] == 0){}
 	motor[motorB] = 0;
 	nMotorEncoder[motorB] = 0;
@@ -36,6 +36,23 @@ void recallHorSensors() //resets the motor encoder for the motor running in the 
 	while(SensorValue[S2] == 0){}
 	motor[motorA] = 0;
 	nMotorEncoder[motorA] = 0;
+}
+
+int checkBoard()
+{
+	recallHorSensors();
+	recallVerSensors();
+	nMotorEncoder[motorA]= 0;
+	motor[motorA] = 25;
+	while (nMotorEncoder[motorA] < ((180/(PI*2.1575))*COL_7)){
+		if (SensorValue[S3] == (int)colorBlue)
+		{
+			recallHorSensors();
+			return 1;
+		}
+	}
+	return -1;
+
 }
 
 bool rowCheck(int row, int col, int token)
@@ -167,14 +184,13 @@ void test(float *columns, int color) //Test hardware
 		recallHorSensors();
 		wait1Msec(500);
 		motor[motorA]= 25;
-		while (nMotorEncoder[motorA] < ((180/(PI*2.1575))*(columns[i]))){}
+		while (nMotorEncoder[motorA] < ((180/(PI*2.1575))*(columns[random(6)]))){}
 		motor[motorA] = 0;
 		displayBigTextLine(3, "%d ",color);
 		wait1Msec(500);
 		eraseDisplay();
 		wait1Msec(50);
 		dispense();
-
 	}
 }
 
@@ -188,7 +204,7 @@ int scanCol(int colNum)
 			gameBoard[i][colNum] = (int)colorYellow;
 			return i;
 		}
-		else if(i < (BOARD_ROWS-2))//checks to see if board already has next index saved
+		else if(i < (BOARD_ROWS-1))//checks to see if board already has next index saved
 		{
 			if (gameBoard[i+1][colNum] != 0)
 				return -1; // dummy place hold value to exit loop
@@ -205,7 +221,62 @@ int scanCol(int colNum)
 	return -1;
 }
 
+void driveAndDispense(float *columns) //Test hardware
+{
+	wait1Msec(500);
+	motor[motorA]= 25;
+	int col = random(6);
+	while (nMotorEncoder[motorA] < ((180/(PI*2.1575))*(columns[col]))){}
+	motor[motorA] = 0;
+	wait1Msec(500);
+	eraseDisplay();
+	wait1Msec(50);
+	dispense();
+	for(int i = 0; i < BOARD_ROWS; i++)
+	{
+		if (gameBoard[i+1][col] != 0)
+			gameBoard[i][col] = (int)colorRed;
+		else if(gameBoard[5][col] == 0)
+			gameBoard[5][col] = (int)colorRed;
+	}
+}
 
+void displayWin(int condition)
+{
+	eraseDisplay();
+	if (condition == 1)
+		displayBigTextLine(3, "PLAYER WINS");
+	else if (condition == 2)
+		displayBigTextLine(3, "gg ez :^)");
+	else
+		displayBigTextLine(3, "Tie!");
+}
+
+int checkWin(int row, int col, int token)
+{
+	if (rowCheck(row, col, token) || colCheck(row, col, token) ||
+		diagonalCheck(row, col, token))
+	{
+		if (token == 5)
+			return 2;
+		else if (token == 4)
+			return 1;
+
+	}
+	else
+	{
+		for(int i = 0; i < BOARD_ROWS; i++)
+		{
+			for(int j = 0; j < BOARD_COLS; j++)
+			{
+				if (gameBoard[i][j] == 0)
+					return 0;
+			}
+		}
+		return 3;
+	}
+	return 0;
+}
 task main()
 {
 	SensorType[S1] = sensorEV3_Touch;
@@ -216,30 +287,50 @@ task main()
 	wait1Msec(50);
 	float columns[7] = {COL_1, COL_2, COL_3, COL_4, COL_5, COL_6, COL_7};
 
-	//creates virtual gameboard and fills it with all empty values
+	/*for(int i = 0; i < BOARD_COLS; i++)
+	{
+	gameBoard[5][i] = (int)colorRed;
+	}
 
-	/*while(!getButtonPress(buttonAny)){}
-	test(columns, SensorValue[S3]);
-	recallHorSensors();*/
-
-	/*while(!getButtonPress(buttonBack)){
-	displayBigTextLine(3,"%d ", SensorValue[S3]);
-	wait1Msec(5000);
-	eraseDisplay();
-	}*/
 	recallVerSensors();
 	recallHorSensors();
 	for(int i = 0; i < BOARD_COLS; i++)
 	{
-		wait1Msec(500);
-		motor[motorA]= 25;
-		while (nMotorEncoder[motorA] < ((180/(PI*2.1575))*(columns[i]))){}
-		motor[motorA] = 0;
-		scanCol(i);
-		recallVerSensors();
+	wait1Msec(500);
+	motor[motorA]= 20;
+	while (nMotorEncoder[motorA] < ((180/(PI*2.1575))*(columns[i]))){}
+	motor[motorA] = 0;
+	scanCol(i);
+	recallVerSensors();
+	}*/
+
+	//test(columns, SensorValue[S3]);
+
+	if (checkBoard() == 1)
+	{
+		int win = 0;
+		bool playAgain = true;//0= no win, 1 = player win, 2 = robot win, 3 = tie
+		while(playAgain == true)
+		{
+			while(win == 0)
+			{
+				//wait for player turn
+				while(!getButtonPress(buttonDown)){}
+				int lastPieceRow = 0, lastPieceCol = 0;//change this to touch sensor when we get it
+				for(int i = 0; i < BOARD_COLS; i++)
+				{
+					lastPieceRow = scanCol(i);
+					lastPieceCol = i;
+				}
+				if (checkWin(lastPieceRow, lastPieceCol, (int)colorYellow) == 1)
+					break; //change this later, ask jesus christ
+
+				driveAndDispense(columns);
+				if (checkWin(lastPieceRow, lastPieceCol, (int)colorYellow) == 2)
+					break;
+			}
+
+
+		}
 	}
-
-
-	//added some stuff
-
 }
