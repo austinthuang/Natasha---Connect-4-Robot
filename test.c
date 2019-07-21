@@ -40,8 +40,8 @@ void recallHorSensors() //resets the motor encoder for the motor running in the 
 
 int checkBoard()
 {
-	recallHorSensors();
 	recallVerSensors();
+	recallHorSensors();
 	nMotorEncoder[motorA]= 0;
 	motor[motorA] = 25;
 	while (nMotorEncoder[motorA] < ((180/(PI*2.1575))*COL_7)){
@@ -221,11 +221,11 @@ int scanCol(int colNum)
 	return -1;
 }
 
-void driveAndDispense(float *columns) //Test hardware
+void driveAndDispense(float *columns, int &row, int &col) //Test hardware
 {
 	wait1Msec(500);
 	motor[motorA]= 25;
-	int col = random(6);
+	col = random(6);
 	while (nMotorEncoder[motorA] < ((180/(PI*2.1575))*(columns[col]))){}
 	motor[motorA] = 0;
 	wait1Msec(500);
@@ -234,10 +234,19 @@ void driveAndDispense(float *columns) //Test hardware
 	dispense();
 	for(int i = 0; i < BOARD_ROWS; i++)
 	{
-		if (gameBoard[i+1][col] != 0)
-			gameBoard[i][col] = (int)colorRed;
+		if (i != 5)
+		{
+			if (gameBoard[i+1][col] != 0)
+			{
+				gameBoard[i][col] = (int)colorRed;
+				row = i;
+			}
+		}
 		else if(gameBoard[5][col] == 0)
+		{
 			gameBoard[5][col] = (int)colorRed;
+			row = 5;
+		}
 	}
 }
 
@@ -305,7 +314,6 @@ task main()
 	}*/
 
 	//test(columns, SensorValue[S3]);
-
 	if (checkBoard() == 1)
 	{
 		int win = 0;
@@ -319,18 +327,61 @@ task main()
 				int lastPieceRow = 0, lastPieceCol = 0;//change this to touch sensor when we get it
 				for(int i = 0; i < BOARD_COLS; i++)
 				{
+					wait1Msec(500);
+					motor[motorA]= 20;
+					while (nMotorEncoder[motorA] < ((180/(PI*2.1575))*(columns[i]))){}
+					motor[motorA] = 0;
 					lastPieceRow = scanCol(i);
 					lastPieceCol = i;
+					if (lastPieceRow != -1)
+						i = 7;
+					recallVerSensors();
 				}
+				recallHorSensors();
 				if (checkWin(lastPieceRow, lastPieceCol, (int)colorYellow) == 1)
-					break; //change this later, ask jesus christ
-
-				driveAndDispense(columns);
-				if (checkWin(lastPieceRow, lastPieceCol, (int)colorYellow) == 2)
-					break;
+				{
+					win = 1;
+					eraseDisplay();
+					displayBigTextLine(3, "PLAYER WINS");
+					wait1Msec(5000);
+				}
+				else
+				{
+					driveAndDispense(columns, lastPieceRow, lastPieceCol);
+					if (checkWin(lastPieceRow, lastPieceCol, (int)colorRed) == 2)
+					{
+						win = 2;
+						eraseDisplay();
+						displayBigTextLine(3, "NATASHA WINS");
+						wait1Msec(5000);
+					}
+					else
+					{
+						recallVerSensors();
+						recallHorSensors();
+					}
+				}
 			}
+			eraseDisplay();
+			displayBigTextLine(5, "PLAY AGAIN?");
+			displayBigTextLine(8, "DOWN FOR NO");
+			displayBigTextLine(10, "ANY FOR YES");
+			win = 0;
+			while(!getButtonPress(buttonAny)){}
 
-
+			while(getButtonPress(buttonDown))
+			{
+				eraseDisplay();
+				playAgain = false;
+			}
+			eraseDisplay();
+			for(int i = 0; i < BOARD_ROWS; i++)
+			{
+				for(int j = 0; j < BOARD_COLS; j++)
+				{
+					gameBoard[i][j] = 0;
+				}
+			}
 		}
 	}
 }
