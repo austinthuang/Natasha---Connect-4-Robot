@@ -294,6 +294,7 @@ task main()
 	wait1Msec(50);
 	SensorMode[S3] = modeEV3Color_Color;
 	wait1Msec(50);
+	SensorType[S4] = sensorEV3_Touch;
 	float columns[7] = {COL_1, COL_2, COL_3, COL_4, COL_5, COL_6, COL_7};
 
 	/*for(int i = 0; i < BOARD_COLS; i++)
@@ -383,7 +384,7 @@ task main()
 			win = 0;
 			while(!getButtonPress(buttonAny)){}
 
-			while(getButtonPress(buttonDown))
+			while(SensorValue[S4] == 1)
 			{
 				eraseDisplay();
 				playAgain = false;
