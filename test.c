@@ -73,7 +73,7 @@ bool rowCheck(int row, int col, int token)
 	}
 	cont = true;
 	//go left
-	for (int i = col - 1; i >=0 && cont == true; i++)
+	for (int i = col - 1; i >=0 && cont == true; i--)
 	{
 		if (gameBoard[row][i] == token)
 			counter++;
@@ -100,7 +100,7 @@ bool colCheck (int row, int col, int token)
 	}
 	cont = true;
 	//go up
-	for (int i = row - 1; i >=0 && cont == true; i++)
+	for (int i = row - 1; i >=0 && cont == true; i--)
 	{
 		if (gameBoard[i][col] == token)
 			counter++;
@@ -198,7 +198,7 @@ int scanCol(int colNum)
 {
 	for(int i = 0; i < BOARD_ROWS; i++)
 	{
-		wait1Msec(50);
+		//wait1Msec(50);
 		if (SensorValue[S3] == (int)colorYellow)
 		{
 			gameBoard[i][colNum] = (int)colorYellow;
