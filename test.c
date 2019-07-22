@@ -73,14 +73,14 @@ bool rowCheck(int row, int col, int token)
 	}
 	cont = true;
 	//go left
-	for (int i = col - 1; i >=0 && cont == true; i--)
+	for (int i = col - 1; i > 0 && cont == true; i--)
 	{
 		if (gameBoard[row][i] == token)
 			counter++;
 		else
 			cont = false;
 	}
-	return counter > 3;
+	return counter >= 4;
 }
 
 bool colCheck (int row, int col, int token)
@@ -100,14 +100,14 @@ bool colCheck (int row, int col, int token)
 	}
 	cont = true;
 	//go up
-	for (int i = row - 1; i >=0 && cont == true; i--)
+	for (int i = row - 1; i > 0 && cont == true; i--)
 	{
 		if (gameBoard[i][col] == token)
 			counter++;
 		else
 			cont = false;
 	}
-	return counter > 3;
+	return counter >= 4;
 }
 
 bool diagonalCheck(int row, int col, int token)
@@ -143,7 +143,7 @@ bool diagonalCheck(int row, int col, int token)
 		trow++;
 		tcol--;
 	}
-	if (counter > 3)
+	if (counter >= 4)
 		return true;
 
 	//top left to bottom right
@@ -174,7 +174,7 @@ bool diagonalCheck(int row, int col, int token)
 		trow--;
 		tcol--;
 	}
-	return counter > 3;
+	return counter >= 4;
 }
 
 void test(float *columns, int color) //Test hardware
@@ -198,7 +198,7 @@ int scanCol(int colNum)
 {
 	for(int i = 0; i < BOARD_ROWS; i++)
 	{
-		//wait1Msec(50);
+		wait1Msec(50);
 		if (SensorValue[S3] == (int)colorYellow)
 		{
 			gameBoard[i][colNum] = (int)colorYellow;
@@ -320,9 +320,17 @@ task main()
 		bool playAgain = true;//0= no win, 1 = player win, 2 = robot win, 3 = tie
 		while(playAgain == true)
 		{
+			for(int i = 0; i < BOARD_ROWS; i++)
+			{
+				for(int j = 0; j < BOARD_COLS; j++)
+				{
+					gameBoard[i][j] = 0;
+				}
+			}
 			while(win == 0)
 			{
 				//wait for player turn
+				displayString(3, "Player's Turn ");
 				while(!getButtonPress(buttonDown)){}
 				int lastPieceRow = 0, lastPieceCol = 0;//change this to touch sensor when we get it
 				for(int i = 0; i < BOARD_COLS; i++)
@@ -366,6 +374,12 @@ task main()
 			displayBigTextLine(5, "PLAY AGAIN?");
 			displayBigTextLine(8, "DOWN FOR NO");
 			displayBigTextLine(10, "ANY FOR YES");
+			wait1Msec(5000);
+			eraseDisplay();
+			for(int i = 0;i < BOARD_ROWS; i++)
+			{
+					displayBigTextLine(2 * i, "%d %d %d %d %d %d %d", gameBoard[i][0],gameBoard[i][1],gameBoard[i][2],gameBoard[i][3],gameBoard[i][4],gameBoard[i][5],gameBoard[i][6]);
+			}
 			win = 0;
 			while(!getButtonPress(buttonAny)){}
 
@@ -375,13 +389,6 @@ task main()
 				playAgain = false;
 			}
 			eraseDisplay();
-			for(int i = 0; i < BOARD_ROWS; i++)
-			{
-				for(int j = 0; j < BOARD_COLS; j++)
-				{
-					gameBoard[i][j] = 0;
-				}
-			}
 		}
 	}
 }
