@@ -11,6 +11,8 @@ const float COL_7 = 34.9;
 const float CENT_CENT = 3.42;
 
 int gameBoard[BOARD_ROWS][BOARD_COLS];
+int movePath[4][2];
+int bestMovePath[4];
 
 void dispense() //Dispenses a chip
 {
@@ -221,33 +223,23 @@ int scanCol(int colNum)
 	return -1;
 }
 
-void driveAndDispense(float *columns, int &row, int &col) //Test hardware
+int dropPiece (int col, int token)
 {
-	wait1Msec(500);
-	motor[motorA]= 25;
-	col = random(6);
-	while (nMotorEncoder[motorA] < ((180/(PI*2.1575))*(columns[col]))){}
-	motor[motorA] = 0;
-	wait1Msec(500);
-	eraseDisplay();
-	wait1Msec(50);
-	dispense();
 	for(int i = 0; i < BOARD_ROWS; i++)
 	{
 		if (i != 5)
 		{
 			if (gameBoard[i+1][col] != 0)
 			{
-				gameBoard[i][col] = (int)colorRed;
-				row = i;
+				return i;
 			}
 		}
 		else if(gameBoard[5][col] == 0)
 		{
-			gameBoard[5][col] = (int)colorRed;
-			row = 5;
+			return 5;
 		}
 	}
+	return 0;
 }
 
 void displayWin(int condition)
@@ -286,6 +278,103 @@ int checkWin(int row, int col, int token)
 	}
 	return 0;
 }
+
+
+
+int makeDecision()
+{
+	int rowNum = 0, currentSum = 0, bestSum = 0;
+
+	for (int i = 0; i < 4; i++)
+	{
+		movePath[i][0] = 0;
+		movePath[i][1] = 0;
+		bestMovePath[i] = 0;
+	}
+	for (int i = 0; i < BOARD_COLS; i++)
+	{
+
+		rowNum = dropPiece(i, (int)colorRed);
+		movePath[0][0]=i;
+		if (checkWin(rowNum, i, (int)colorRed))
+		{
+			movePath[0][1] = 1;
+		}
+		for(int j = 0; j < BOARD_COLS; j++)
+		{
+			rowNum = dropPiece(j, (int)colorYellow);
+			movePath[1][0]=j;
+			if (checkWin(rowNum, j, (int)colorYellow))
+			{
+				movePath[1][1] = -1;
+			}
+			for(int k = 0; k < BOARD_COLS; k++)
+			{
+				rowNum = dropPiece(k, (int)colorRed);
+				movePath[2][0]=k;
+				if (checkWin(rowNum, k, (int)colorRed))
+				{
+					movePath[2][1] = 1;
+				}
+				for(int l = 0; l < BOARD_COLS; l++)
+				{
+					rowNum = dropPiece(l, (int)colorYellow);
+					movePath[3][0]=l;
+					if (checkWin(rowNum, l, (int)colorYellow))
+					{
+						movePath[3][1] = -1;
+						currentSum = movePath[0][1] + movePath[1][1] + movePath[2][1] + movePath[3][1];
+						if (currentSum > bestSum)
+						{
+							bestMovePath[0] = movePath[0][0];
+							bestMovePath[1] = movePath[1][0];
+							bestMovePath[2] = movePath[2][0];
+							bestMovePath[3] = movePath[3][0];
+							bestSum = currentSum;
+						}
+						for (int i = 0; i < 4; i++)
+						{
+							movePath[i][0] = 0;
+							movePath[i][1] = 0;
+						}
+
+					}
+				}
+			}
+		}
+	}
+	return bestMovePath[0];
+}
+
+void driveAndDispense(float *columns, int &row, int &col) //Test hardware
+{
+	wait1Msec(500);
+	motor[motorA]= 25;
+	col = random(6);
+	//col = makeDecision();
+	while (nMotorEncoder[motorA] < ((180/(PI*2.1575))*(columns[col]))){}
+	motor[motorA] = 0;
+	wait1Msec(500);
+	eraseDisplay();
+	wait1Msec(50);
+	dispense();
+	for(int i = 0; i < BOARD_ROWS; i++)
+	{
+		if (i != 5)
+		{
+			if (gameBoard[i+1][col] != 0)
+			{
+				gameBoard[i][col] = (int)colorRed;
+				row = i;
+			}
+		}
+		else if(gameBoard[5][col] == 0)
+		{
+			gameBoard[5][col] = (int)colorRed;
+			row = 5;
+		}
+	}
+}
 task main()
 {
 	SensorType[S1] = sensorEV3_Touch;
@@ -296,6 +385,8 @@ task main()
 	wait1Msec(50);
 	SensorType[S4] = sensorEV3_Touch;
 	float columns[7] = {COL_1, COL_2, COL_3, COL_4, COL_5, COL_6, COL_7};
+
+
 
 	/*for(int i = 0; i < BOARD_COLS; i++)
 	{
@@ -331,12 +422,15 @@ task main()
 			while(win == 0)
 			{
 				//wait for player turn
-				displayString(3, "Player's Turn ");
-				while(!getButtonPress(buttonDown)){}
+				for(int i = 0;i < BOARD_ROWS; i++)
+				{
+					displayBigTextLine(2 * i, "%d %d %d %d %d %d %d", gameBoard[i][0],gameBoard[i][1],gameBoard[i][2],gameBoard[i][3],gameBoard[i][4],gameBoard[i][5],gameBoard[i][6]);
+				}
+				while(!SensorValue[S4]){}
+				eraseDisplay();
 				int lastPieceRow = 0, lastPieceCol = 0;//change this to touch sensor when we get it
 				for(int i = 0; i < BOARD_COLS; i++)
 				{
-					wait1Msec(500);
 					motor[motorA]= 20;
 					while (nMotorEncoder[motorA] < ((180/(PI*2.1575))*(columns[i]))){}
 					motor[motorA] = 0;
@@ -347,6 +441,7 @@ task main()
 					recallVerSensors();
 				}
 				recallHorSensors();
+
 				if (checkWin(lastPieceRow, lastPieceCol, (int)colorYellow) == 1)
 				{
 					win = 1;
@@ -379,7 +474,7 @@ task main()
 			eraseDisplay();
 			for(int i = 0;i < BOARD_ROWS; i++)
 			{
-					displayBigTextLine(2 * i, "%d %d %d %d %d %d %d", gameBoard[i][0],gameBoard[i][1],gameBoard[i][2],gameBoard[i][3],gameBoard[i][4],gameBoard[i][5],gameBoard[i][6]);
+				displayBigTextLine(2 * i, "%d %d %d %d %d %d %d", gameBoard[i][0],gameBoard[i][1],gameBoard[i][2],gameBoard[i][3],gameBoard[i][4],gameBoard[i][5],gameBoard[i][6]);
 			}
 			win = 0;
 			while(!getButtonPress(buttonAny)){}
