@@ -296,48 +296,59 @@ int makeDecision()
 
 		rowNum = dropPiece(i, (int)colorRed);
 		movePath[0][0]=i;
-		if (checkWin(rowNum, i, (int)colorRed))
+		if (checkWin(rowNum, i, (int)colorRed)) //RED WIN
 		{
-			movePath[0][1] = 1;
+			movePath[0][1] = 16;
 		}
+		else if (checkWin(rowNum, i, (int)colorYellow)) //YELLOW BLOCK
+			movePath[0][1] = 14;
+		else
+			//movePath[0][1] = 0;
 		for(int j = 0; j < BOARD_COLS; j++)
 		{
 			rowNum = dropPiece(j, (int)colorYellow);
 			movePath[1][0]=j;
-			if (checkWin(rowNum, j, (int)colorYellow))
+			if (checkWin(rowNum, j, (int)colorYellow)) //YELLOW WIN
 			{
-				movePath[1][1] = -1;
+				movePath[1][1] = -12;
 			}
+			else if(checkWin(rowNum, j, (int)colorRed)) //RED BLOCK
+				movePath[1][1] = -10;
+			else
+				//movePath[1][1] = 0;
 			for(int k = 0; k < BOARD_COLS; k++)
 			{
 				rowNum = dropPiece(k, (int)colorRed);
 				movePath[2][0]=k;
 				if (checkWin(rowNum, k, (int)colorRed))
 				{
-					movePath[2][1] = 1;
+					movePath[2][1] = 8;
 				}
+				else if (checkWin(rowNum, k, (int)colorYellow))
+					movePath[2][1] = 6;
+				else
+					//movePath[2][1] = 0;
 				for(int l = 0; l < BOARD_COLS; l++)
 				{
 					rowNum = dropPiece(l, (int)colorYellow);
 					movePath[3][0]=l;
 					if (checkWin(rowNum, l, (int)colorYellow))
 					{
-						movePath[3][1] = -1;
-						currentSum = movePath[0][1] + movePath[1][1] + movePath[2][1] + movePath[3][1];
-						if (currentSum > bestSum)
-						{
-							bestMovePath[0] = movePath[0][0];
-							bestMovePath[1] = movePath[1][0];
-							bestMovePath[2] = movePath[2][0];
-							bestMovePath[3] = movePath[3][0];
-							bestSum = currentSum;
-						}
-						for (int i = 0; i < 4; i++)
-						{
-							movePath[i][0] = 0;
-							movePath[i][1] = 0;
-						}
+						movePath[3][1] = -4;
+					}
+					else if(checkWin(rowNum, l, (int)colorRed))
+						movePath[3][1] = -2;
+					else
+						//movePath[3][1] = 0;
 
+					currentSum = movePath[0][1] + movePath[1][1] + movePath[2][1] + movePath[3][1];
+					if (currentSum > bestSum)
+					{
+						bestMovePath[0] = movePath[0][0];
+						bestMovePath[1] = movePath[1][0];
+						bestMovePath[2] = movePath[2][0];
+						bestMovePath[3] = movePath[3][0];
+						bestSum = currentSum;
 					}
 				}
 			}
@@ -350,14 +361,15 @@ void driveAndDispense(float *columns, int &row, int &col) //Test hardware
 {
 	wait1Msec(500);
 	motor[motorA]= 25;
-	col = random(6);
-	//col = makeDecision();
+	//col = random(6);
+	col = makeDecision();
 	while (nMotorEncoder[motorA] < ((180/(PI*2.1575))*(columns[col]))){}
 	motor[motorA] = 0;
 	wait1Msec(500);
 	eraseDisplay();
 	wait1Msec(50);
 	dispense();
+
 	for(int i = 0; i < BOARD_ROWS; i++)
 	{
 		if (i != 5)
@@ -366,6 +378,7 @@ void driveAndDispense(float *columns, int &row, int &col) //Test hardware
 			{
 				gameBoard[i][col] = (int)colorRed;
 				row = i;
+				i = 7;
 			}
 		}
 		else if(gameBoard[5][col] == 0)
@@ -386,26 +399,6 @@ task main()
 	SensorType[S4] = sensorEV3_Touch;
 	float columns[7] = {COL_1, COL_2, COL_3, COL_4, COL_5, COL_6, COL_7};
 
-
-
-	/*for(int i = 0; i < BOARD_COLS; i++)
-	{
-	gameBoard[5][i] = (int)colorRed;
-	}
-
-	recallVerSensors();
-	recallHorSensors();
-	for(int i = 0; i < BOARD_COLS; i++)
-	{
-	wait1Msec(500);
-	motor[motorA]= 20;
-	while (nMotorEncoder[motorA] < ((180/(PI*2.1575))*(columns[i]))){}
-	motor[motorA] = 0;
-	scanCol(i);
-	recallVerSensors();
-	}*/
-
-	//test(columns, SensorValue[S3]);
 	if (checkBoard() == 1)
 	{
 		int win = 0;
@@ -422,13 +415,13 @@ task main()
 			while(win == 0)
 			{
 				//wait for player turn
-				for(int i = 0;i < BOARD_ROWS; i++)
+				for(int i = 0;i < BOARD_ROWS; i++) // display array to screen
 				{
 					displayBigTextLine(2 * i, "%d %d %d %d %d %d %d", gameBoard[i][0],gameBoard[i][1],gameBoard[i][2],gameBoard[i][3],gameBoard[i][4],gameBoard[i][5],gameBoard[i][6]);
 				}
 				while(!SensorValue[S4]){}
 				eraseDisplay();
-				int lastPieceRow = 0, lastPieceCol = 0;//change this to touch sensor when we get it
+				int lastPieceRow = 0, lastPieceCol = 0;
 				for(int i = 0; i < BOARD_COLS; i++)
 				{
 					motor[motorA]= 20;
