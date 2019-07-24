@@ -553,7 +553,7 @@ int evaluateMedian(int count, int high, int *array)
 			}
 		}
 		return evaluateMedian(count-2,high, array);
-	}
+	}	
 }
 
 int median(int *array)
