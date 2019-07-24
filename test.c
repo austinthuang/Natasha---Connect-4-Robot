@@ -188,23 +188,6 @@ bool diagonalCheck(int row, int col, int token)
 		return false;
 }
 
-void test(float *columns, int color) //Test hardware
-{
-	for(int i = 0; i < 7; i++)
-	{
-		recallHorSensors();
-		wait1Msec(500);
-		motor[motorA]= 25;
-		while (nMotorEncoder[motorA] < ((180/(PI*2.1575))*(columns[random(6)]))){}
-		motor[motorA] = 0;
-		displayBigTextLine(3, "%d ",color);
-		wait1Msec(500);
-		eraseDisplay();
-		wait1Msec(50);
-		dispense();
-	}
-}
-
 int scanCol(int colNum)
 {
 	for(int i = 0; i < BOARD_ROWS; i++)
@@ -296,17 +279,6 @@ int checkWin(int token)
 	return 3;
 }
 
-//AI V2.0
-
-/*void updateBestCol(int currentScore, int&bestScore, int currentCol, int&bestCol)
-{
-if (currentScore > bestScore)
-{
-bestScore = currentScore;
-bestCol = currentCol;
-}
-}*/
-
 bool checkFullColumn(int col)
 {
 	for (int i = 0; i < BOARD_ROWS; i++)
@@ -349,124 +321,6 @@ int min(int value1, int value2)
 	else
 		return value1;
 }
-
-/*
-int decideMove()
-{
-int scores[7];
-int rowNum[4];
-for (int initialize = 0; initialize < BOARD_COLS; initialize++)
-{
-scores[initialize] = 0;
-}
-for (int i = 0; i < BOARD_COLS; i++)
-{
-if (checkFullColumn(i))
-i++;
-rowNum[0] = dropPiece(i,(int)colorRed);
-gameBoard[rowNum[0]][i] = (int)colorRed;
-if (checkWin(rowNum[0],i,(int)colorRed))
-{
-scores[i] = 100;
-i = BOARD_COLS;
-}
-else
-{
-for (int j = 0; j < BOARD_COLS; j++)
-{
-if (checkFullColumn(j))
-j++;
-rowNum[1] = dropPiece(j,(int)colorYellow);
-gameBoard[rowNum[1]][j] = (int)colorYellow;
-if (checkWin(rowNum[1],j,(int)colorYellow))
-{
-scores[i] = -100;
-j = BOARD_COLS;
-}
-else
-{
-for (int k = 0; k < BOARD_COLS; k++)
-{
-if (checkFullColumn(k))
-k++;
-rowNum[2] = dropPiece(k,(int)colorRed);
-gameBoard[rowNum[2]][k] = (int)colorRed;
-if (checkWin(rowNum[2],k,(int)colorRed))
-{
-scores[i] = 50;
-k = BOARD_COLS;
-j = BOARD_COLS;
-}
-else
-{
-for (int l = 0; l < BOARD_COLS; l++)
-{
-if (checkFullColumn(l))
-l++;
-rowNum[3] = dropPiece(l,(int)colorYellow);
-gameBoard[rowNum[3]][l] = (int)colorYellow;
-if (checkWin(rowNum[3],l,(int)colorYellow))
-{
-scores[i] = -50;
-k = BOARD_COLS;
-j = BOARD_COLS;
-l = BOARD_COLS;
-}
-else
-{
-scores[i] = 0;
-}
-gameBoard[rowNum[3]][l] = 0;
-}
-}
-gameBoard[rowNum[2]][k]=0;
-}
-}
-gameBoard[rowNum[1]][j] = 0;
-}
-}
-gameBoard[rowNum[0]][i] = 0;
-}
-eraseDisplay();
-displayBigTextLine(3, "%d %d %d %d %d %d %d", scores[0], scores[1], scores[2], scores[3], scores[4], scores[5],scores[6]);
-int highest = -200;
-int goodCol = 0;
-for (int i = 0; i < BOARD_COLS; i++)
-{
-if (scores[i] > highest)
-{
-highest = scores[i];
-goodCol = i;
-}
-}
-wait1Msec(2000);
-return goodCol;
-}*/
-
-/*int getBestMove(int depth, bool maximize)
-{
-if (depth == 0 || checkFullBoard())
-return 0;
-
-if (maximize)
-{
-int maxEval = -10000;
-for (int i = 0; i < BOARD_COLS; i++)
-{
-dropPiece(i, (int)colorRed));
-int eval = getBestMove( depth-1, false );
-}
-}
-else
-{
-int minEval = 10000;
-for(int i = 0; i < BOARD_COLS; i++)
-{
-dropPiece(i, (int)colorYellow));
-int eval = getBestMove(depth - 1, true
-}
-}
-}*/
 
 void removeToken(int col)
 {
@@ -603,15 +457,6 @@ void driveAndDispense(float *columns, int &row, int &col) //Test hardware
 		else
 			scores[i] = -6;
 	}
-	/*int highest = -20000;
-	for(int i = 0; i < BOARD_COLS; i++)
-	{
-	if (scores[i] > highest)
-	{
-	highest = scores[i];
-	col = i;
-	}
-	}*/
 
 	col = median(scores);
 
