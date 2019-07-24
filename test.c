@@ -596,17 +596,20 @@ task main()
 						wait1Msec(5000);
 					}
 				}
+				if (checkFullBoard())
+					win = 3;
 			}
 			endScreen();
 			win = 0;
-			while(!SensorValue[S4]){}
-
-			while(SensorValue[S4] == 1)
+			bool restart = false;
+			while(playAgain == true && !restart)
 			{
-				eraseDisplay();
-				playAgain = false;
+				if (getButtonPress(buttonEnter))
+					playAgain = false;
+
+				else if (SensorValue[S4])
+					restart = true;
 			}
-			eraseDisplay();
 		}
 	}
 }
