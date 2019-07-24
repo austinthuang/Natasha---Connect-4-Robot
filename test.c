@@ -549,14 +549,14 @@ task main()
 				time1[T1] = 0;
 
 				while(!SensorValue[S4])
+				{
+					if (time1[T1] % 20000 == 0)
 					{
-						if (time1[T1] % 20000 == 0)
-						{
-							setSoundVolume(100);
-							playSoundFile("Ready");
-							sleep(1000);
-						}
+						setSoundVolume(100);
+						playSoundFile("Ready");
+						sleep(1000);
 					}
+				}
 				eraseDisplay();
 				for(int i = 0; i < BOARD_COLS; i++)
 				{
@@ -565,6 +565,13 @@ task main()
 					motor[motorA] = 0;
 					lastPieceRow = scanCol(i);
 					lastPieceCol = i;
+					if (SensorValue[S4] == 1)
+					{
+						i = -1;
+						recallVerSensors();
+						recallHorSensors();
+					}
+
 					if (lastPieceRow != -1)
 						i = 7;
 					recallVerSensors();
