@@ -1,4 +1,3 @@
-//const float CALIBRATE_BOARD = 9.0;
 const int BOARD_ROWS = 6;
 const int BOARD_COLS = 7;
 const float COL_1 = 11.58;
@@ -21,7 +20,6 @@ void dispense() //Dispenses a chip
 	motor[motorC] = -20;
 	wait1Msec(1000);
 	motor[motorC] = 0;
-	//while(getButtonPress(buttonAny)){}
 }
 
 void recallVerSensors() //resets the motor encoder for the motor running in the vertical xis
@@ -188,27 +186,40 @@ bool diagonalCheck(int row, int col, int token)
 		return false;
 }
 
+bool checkFullColumn(int col)
+{
+	for (int i = 0; i < BOARD_ROWS; i++)
+	{
+		if (gameBoard[i][col] == 0)
+			return false;
+	}
+	return true;
+}
+
 int scanCol(int colNum)
 {
-	for(int i = 0; i < BOARD_ROWS; i++)
+	if (!checkFullColumn(colNum))
 	{
-		wait1Msec(50);
-		if (SensorValue[S3] == (int)colorYellow)
+		for(int i = 0; i < BOARD_ROWS; i++)
 		{
-			gameBoard[i][colNum] = (int)colorYellow;
-			return i;
-		}
-		else if(i < (BOARD_ROWS-1))//checks to see if board already has next index saved
-		{
-			if (gameBoard[i+1][colNum] != 0)
-				return -1; // dummy place hold value to exit loop
-		}
-		if (i<BOARD_ROWS-1)
-		{
-			nMotorEncoder[motorB] = 0;
-			motor[motorB] = 15;
-			while (nMotorEncoder[motorB] < ((180/(PI*1.1))*(CENT_CENT))){}
-			motor[motorB] = 0;
+			wait1Msec(50);
+			if (SensorValue[S3] == (int)colorYellow)
+			{
+				gameBoard[i][colNum] = (int)colorYellow;
+				return i;
+			}
+			else if(i < (BOARD_ROWS-1))//checks to see if board already has next index saved
+			{
+				if (gameBoard[i+1][colNum] != 0)
+					return -1; // dummy place hold value to exit loop
+			}
+			if (i<BOARD_ROWS-1)
+			{
+				nMotorEncoder[motorB] = 0;
+				motor[motorB] = 15;
+				while (nMotorEncoder[motorB] < ((180/(PI*1.1))*(CENT_CENT))){}
+				motor[motorB] = 0;
+			}
 		}
 	}
 	recallVerSensors();
@@ -239,13 +250,27 @@ int dropPiece (int col, int token)
 
 void displayWin(int condition)
 {
+	setSoundVolume(100);
 	eraseDisplay();
 	if (condition == 1)
+	{
 		displayBigTextLine(3, "PLAYER WINS");
+		playSoundFile("Uh-oh");
+		sleep(1000);
+	}
 	else if (condition == 2)
+	{
 		displayBigTextLine(3, "gg ez :^)");
+		playSoundFile("Thank you");
+		sleep(1000);
+	}
 	else
+	{
 		displayBigTextLine(3, "Tie!");
+		playSoundFile("Good job");
+		sleep(1000);
+	}
+
 }
 
 int checkWin(int token)
@@ -277,16 +302,6 @@ int checkWin(int token)
 		}
 	}
 	return 3;
-}
-
-bool checkFullColumn(int col)
-{
-	for (int i = 0; i < BOARD_ROWS; i++)
-	{
-		if (gameBoard[i][col] == 0)
-			return false;
-	}
-	return true;
 }
 
 bool checkFullBoard()
@@ -437,7 +452,6 @@ int median(int *array)
 
 void driveAndDispense(float *columns, int &row, int &col) //Test hardware
 {
-	//wait1Msec(500);
 	for (int i = 0; i < BOARD_ROWS; i++) // Fill Dummy array
 	{
 		for (int j = 0; j < BOARD_COLS; j++)
@@ -457,7 +471,8 @@ void driveAndDispense(float *columns, int &row, int &col) //Test hardware
 		else
 			scores[i] = -6;
 	}
-
+	setSoundVolume(100);
+	playSoundFile("Ready");
 	col = median(scores);
 
 	displayTextLine(3, "%d %d %d %d %d %d %d", scores[0],scores[1],scores[2],scores[3],scores[4],scores[5],scores[6]);
@@ -485,15 +500,29 @@ void driveAndDispense(float *columns, int &row, int &col) //Test hardware
 	}
 	row = dropPiece(col, (int)colorRed);
 }
+
+void endScreen()
+{
+	eraseDisplay();
+	displayBigTextLine(5, "PLAY AGAIN?");
+	displayBigTextLine(8, "DOWN FOR NO");
+	displayBigTextLine(10, "ANY FOR YES");
+	wait1Msec(2000);
+	eraseDisplay();
+	for(int i = 0;i < BOARD_ROWS; i++)
+	{
+		displayBigTextLine(2 * i, "%d %d %d %d %d %d %d", gameBoard[i][0],gameBoard[i][1],gameBoard[i][2],gameBoard[i][3],gameBoard[i][4],gameBoard[i][5],gameBoard[i][6]);
+	}
+}
 task main()
 {
-	SensorType[S1] = sensorEV3_Touch;
-	SensorType[S2] = sensorEV3_Touch;
+	SensorType[S1] = sensorEV3_Touch; //vertical reset
+	SensorType[S2] = sensorEV3_Touch; //horizontal reset
 	SensorType[S3] = sensorEV3_Color;
 	wait1Msec(50);
 	SensorMode[S3] = modeEV3Color_Color;
 	wait1Msec(50);
-	SensorType[S4] = sensorEV3_Touch;
+	SensorType[S4] = sensorEV3_Touch; //Next turn sensor
 	float columns[7] = {COL_1, COL_2, COL_3, COL_4, COL_5, COL_6, COL_7};
 
 	if (checkBoard() == 1)
@@ -517,7 +546,17 @@ task main()
 				{
 					displayBigTextLine(2 * i, "%d %d %d %d %d %d %d", gameBoard[i][0],gameBoard[i][1],gameBoard[i][2],gameBoard[i][3],gameBoard[i][4],gameBoard[i][5],gameBoard[i][6]);
 				}
-				while(!SensorValue[S4]){}
+				time1[T1] = 0;
+
+				while(!SensorValue[S4])
+					{
+						if (time1[T1] % 20000 == 0)
+						{
+							setSoundVolume(100);
+							playSoundFile("Ready");
+							sleep(1000);
+						}
+					}
 				eraseDisplay();
 				for(int i = 0; i < BOARD_COLS; i++)
 				{
@@ -535,39 +574,25 @@ task main()
 				if (checkWin((int)colorYellow) == 1)
 				{
 					win = 1;
-					eraseDisplay();
-					displayBigTextLine(3, "PLAYER WINS");
+					displayWin(win);
 					wait1Msec(5000);
 				}
 				else
 				{
 					driveAndDispense(columns, lastPieceRow, lastPieceCol);
+					recallVerSensors();
+					recallHorSensors();
 					if (checkWin((int)colorRed) == 2)
 					{
 						win = 2;
-						eraseDisplay();
-						displayBigTextLine(3, "NATASHA WINS");
+						displayWin(win);
 						wait1Msec(5000);
-					}
-					else
-					{
-						recallVerSensors();
-						recallHorSensors();
 					}
 				}
 			}
-			eraseDisplay();
-			displayBigTextLine(5, "PLAY AGAIN?");
-			displayBigTextLine(8, "DOWN FOR NO");
-			displayBigTextLine(10, "ANY FOR YES");
-			wait1Msec(5000);
-			eraseDisplay();
-			for(int i = 0;i < BOARD_ROWS; i++)
-			{
-				displayBigTextLine(2 * i, "%d %d %d %d %d %d %d", gameBoard[i][0],gameBoard[i][1],gameBoard[i][2],gameBoard[i][3],gameBoard[i][4],gameBoard[i][5],gameBoard[i][6]);
-			}
+			endScreen();
 			win = 0;
-			while(!getButtonPress(buttonAny)){}
+			while(!SensorValue[S4]){}
 
 			while(SensorValue[S4] == 1)
 			{
