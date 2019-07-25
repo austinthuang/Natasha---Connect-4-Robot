@@ -51,6 +51,11 @@ int checkBoard()
 			return 1;
 		}
 	}
+	motor[motorA]=0;
+	setSoundVolume(100);
+	playSoundFile("Error alarm");
+	sleep(1000);
+	recallHorSensors();
 	return -1;
 
 }
@@ -255,14 +260,14 @@ void displayWin(int condition)
 	if (condition == 1)
 	{
 		displayBigTextLine(3, "PLAYER WINS");
-		playSoundFile("Uh-oh");
-		sleep(1000);
+		playSoundFile("Japan");
+		sleep(10000);
 	}
 	else if (condition == 2)
 	{
 		displayBigTextLine(3, "gg ez :^)");
-		playSoundFile("Thank you");
-		sleep(1000);
+		playSoundFile("Kermit");
+		sleep(10000);
 	}
 	else
 	{
@@ -475,15 +480,11 @@ void driveAndDispense(float *columns, int &row, int &col) //Test hardware
 	playSoundFile("Ready");
 	col = median(scores);
 
-	displayTextLine(3, "%d %d %d %d %d %d %d", scores[0],scores[1],scores[2],scores[3],scores[4],scores[5],scores[6]);
-	displayTextLine(4, "%d", col);
-	wait1Msec(2000);
+	displayBigTextLine(3, "%d %d %d %d %d %d %d", scores[0],scores[1],scores[2],scores[3],scores[4],scores[5],scores[6]);
+	displayBigTextLine(5, "%d", col);
+	wait1Msec(5000);
 	motor[motorA]= 25;
-	//col = random(6);
-	/*while(checkFullColumn(col))
-	{
-	col = random(6);
-	}*/
+	//col = 0;
 	while (nMotorEncoder[motorA] < ((180/(PI*2.1575))*(columns[col]))){}
 	motor[motorA] = 0;
 	wait1Msec(500);
@@ -514,6 +515,7 @@ void endScreen()
 		displayBigTextLine(2 * i, "%d %d %d %d %d %d %d", gameBoard[i][0],gameBoard[i][1],gameBoard[i][2],gameBoard[i][3],gameBoard[i][4],gameBoard[i][5],gameBoard[i][6]);
 	}
 }
+
 task main()
 {
 	SensorType[S1] = sensorEV3_Touch; //vertical reset
@@ -604,11 +606,18 @@ task main()
 			bool restart = false;
 			while(playAgain == true && !restart)
 			{
+				/*if (getButtonPress(buttonEnter))
+				playAgain = false;*/
 				if (getButtonPress(buttonEnter))
+				{
 					playAgain = false;
+				}
 
 				else if (SensorValue[S4])
+				{
 					restart = true;
+					wait1Msec(3000);
+				}
 			}
 		}
 	}
